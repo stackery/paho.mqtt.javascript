@@ -1051,7 +1051,7 @@ var PahoMQTT = (function (global) {
 		this.socket.onerror = scope(this._on_socket_error, this);
 		this.socket.onclose = scope(this._on_socket_close, this);
 
-		this.sendPinger = new Pinger(this, window, this.connectOptions.keepAliveInterval);
+		this.sendPinger = new Pinger(this, window, this.connectOptions.pingInterval);
 		this.receivePinger = new Pinger(this, window, this.connectOptions.keepAliveInterval);
 		if (this._connectTimeout) {
 			this._connectTimeout.cancel();
@@ -1858,6 +1858,8 @@ var PahoMQTT = (function (global) {
 		 * @param {number} connectOptions.keepAliveInterval - the server disconnects this client if
 		 *                    there is no activity for this number of seconds.
 		 *                    The default value of 60 seconds is assumed if not set.
+		 * @param {number} connectOptions.pingInterval - How often to send a ping message to the server.
+		 *                    The default is the value of connectOptions.keepAliveInterval if not set.
 		 * @param {boolean} connectOptions.cleanSession - if true(default) the client and server
 		 *                    persistent state is deleted on successful connect.
 		 * @param {boolean} connectOptions.useSSL - if present and true, use an SSL Websocket connection.
@@ -1911,6 +1913,7 @@ var PahoMQTT = (function (global) {
 									   password:"string",
 									   willMessage:"object",
 									   keepAliveInterval:"number",
+						   			   pingInterval:"number",
 									   cleanSession:"boolean",
 									   useSSL:"boolean",
 									   invocationContext:"object",
@@ -1926,6 +1929,9 @@ var PahoMQTT = (function (global) {
 			// If no keep alive interval is set, assume 60 seconds.
 			if (connectOptions.keepAliveInterval === undefined)
 				connectOptions.keepAliveInterval = 60;
+			
+			if (connectOptions.pingInterval === undefined)
+				connectOptions.pingInterval = connectOptions.keepAliveInterval;
 
 			if (connectOptions.mqttVersion > 4 || connectOptions.mqttVersion < 3) {
 				throw new Error(format(ERROR.INVALID_ARGUMENT, [connectOptions.mqttVersion, "connectOptions.mqttVersion"]));
